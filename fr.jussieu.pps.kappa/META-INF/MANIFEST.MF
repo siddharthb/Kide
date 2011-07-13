@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kappa
+Bundle-SymbolicName: fr.jussieu.pps.kappa
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: fr.jussieu.pps.kappa.Activator
+Bundle-Vendor: Laborataire PPS
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text;bundle-version="3.5.2"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Eclipse-AutoStart: true
+Export-Package: fr.jussieu.pps.kappa;uses:="org.eclipse.jface.text,org.eclipse.core.runtime,org.osgi.framework",
+ fr.jussieu.pps.kappa.core.model;uses:="org.eclipse.jface.text,fr.jussieu.pps.kappa.core.parse.ast",
+ fr.jussieu.pps.kappa.core.parse;uses:="java_cup.runtime",
+ fr.jussieu.pps.kappa.core.parse.ast,
+ fr.jussieu.pps.kappa.core.scan;uses:="org.eclipse.jface.text,java_cup.runtime,org.eclipse.jface.text.rules",
+ java_cup;uses:="java_cup.runtime",
+ java_cup.runtime
