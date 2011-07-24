@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.part.ViewPart;
@@ -46,6 +47,10 @@ public class InfluenceMapView extends ViewPart {
 //		System.out.println(pathnew);
 		 Process process=null;
 			Runtime runtime = Runtime.getRuntime();
+			IPreferenceStore store = KappaUiPlugin.getDefault().getPreferenceStore();
+			String binary=store.getString("pathPreference");
+			binary=(binary.substring(0,binary.lastIndexOf('/')+1)+"./"+binary.substring(binary.lastIndexOf('/')+1));
+
 			try {
 				// execute the command
 				process = runtime.exec("rm -rf "+pathnew+"map.gif",null,null);
@@ -56,8 +61,9 @@ public class InfluenceMapView extends ViewPart {
 				
 				File f1 = new File("");
 				String s=(KappaUiPlugin.getDefault().getBundle().getLocation());
-				System.out.println(path2);
-				process = runtime.exec(s.substring(s.lastIndexOf(':')+1)+"lib/./KaSim -i " + path2 + " -im map.dot -e 0",null,new File(f1.getAbsolutePath()));
+	//			System.out.println(path2);
+//				process = runtime.exec(s.substring(s.lastIndexOf(':')+1)+"lib/./KaSim -i " + path2 + " -im map.dot -e 0",null,new File(f1.getAbsolutePath()));
+				process = runtime.exec(binary+" -i " + path2 + " -im map.dot -e 0",null,new File(f1.getAbsolutePath()));
 
 				// get the standard and error outputs
 	

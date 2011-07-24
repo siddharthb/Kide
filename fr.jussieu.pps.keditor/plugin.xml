@@ -25,7 +25,13 @@
       <page
             class="fr.jussieu.pps.keditor.ui.preferences.KappaMainPreferencePage"
             id="fr.jussieu.pps.keditor.ui.KappaMainPreferencePage"
-            name="Kappa">
+            name="Kappa Preferences">
+      </page>
+      <page
+            category="fr.jussieu.pps.keditor.ui.KappaMainPreferencePage"
+            class="fr.jussieu.pps.keditor.ui.preferences.PathPreferencePage"
+            id="fr.jussieu.pps.keditor.ui.preferences.PathPreferencePage"
+            name="Path Preferences">
       </page>
    </extension>
    <extension
@@ -79,13 +85,31 @@
                   name="additions">
             </separator>
          </menu>
+         <action
+               class="fr.jussieu.pps.keditor.actions.version"
+               icon="images/compression.png"
+               id="fr.jussieu.pps.keditor.VersionButton"
+               label="Version"
+               style="push"
+               toolbarPath="Normal/additions"
+               tooltip="KaSim Version">
+         </action>
+         <action
+               class="fr.jussieu.pps.keditor.actions.NewFile"
+               icon="images/new.png"
+               id="fr.jussieu.pps.keditor.NewFile"
+               label="New File"
+               style="push"
+               toolbarPath="Normal/additions"
+               tooltip="New Kappa File">
+         </action>
       </actionSet>
    </extension>
    <extension
          point="org.eclipse.ui.views">
       <category
             id="fr.jussieu.pps.keditor"
-            name="Map Category">
+            name="Kappa Editor">
       </category>
       <view
             category="fr.jussieu.pps.keditor"
@@ -99,6 +123,13 @@
             icon="images/story.png"
             id="fr.jussieu.pps.keditor.kappaview"
             name="The Kappa View"
+            restorable="true">
+      </view>
+      <view
+            class="fr.jussieu.pps.keditor.views.KappaBinariesView"
+            icon="images/compression.png"
+            id="fr.jussieu.pps.keditor.binaryview"
+            name="Kappa Binaries View"
             restorable="true">
       </view>
    </extension>
@@ -175,6 +206,49 @@
             id="fr.jussieu.pps.keditor.KappaPerspective"
             name="Kappa Perspective">
       </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            adaptable="false"
+            class="fr.jussieu.pps.keditor.ui.propertyPage"
+            icon="icons/sample.gif"
+            id="fr.jussieu.pps.keditor.ui.propertyPage"
+            name="Kappa Author Page"
+            objectClass="fr.jussieu.pps.keditor.views.MultipleSimulationView$TreeObject">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            adaptable="false"
+            class="fr.jussieu.pps.keditor.ui.binPropertyPage"
+            icon="images/story.png"
+            id="fr.jussieu.pps.keditor.ui.binPropertyPage"
+            name="Binary Properties Page"
+            objectClass="fr.jussieu.pps.keditor.views.KappaBinariesView$TreeObject1">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="fr.jussieu.pps.keditor"
+            name="Kappa Wizards">
+      </category>
+      <wizard
+            category="fr.jussieu.pps.keditor"
+            class="fr.jussieu.pps.keditor.wizards.KappaNewWizard"
+            finalPerspective="fr.jussieu.pps.keditor.KappaPerspective"
+            icon="icons/sample.gif"
+            id="fr.jussieu.pps.keditor.wizards.KappaNewWizard"
+            name="Kappa File Wizard">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="fr.jussieu.pps.keditor.ui.preferences.PreferenceInitializer">
+      </initializer>
    </extension>
 
 </plugin>

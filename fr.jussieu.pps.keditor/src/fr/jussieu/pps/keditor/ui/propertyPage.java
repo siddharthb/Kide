@@ -15,7 +15,10 @@ package fr.jussieu.pps.keditor.ui;
  public class propertyPage extends PropertyPage implements
                     IWorkbenchPropertyPage {
           private Text textField;
+          private Text textField2;
+          
           public static QualifiedName  AUTHOR_PROP_KEY = new QualifiedName("Author", "Author");
+          public static QualifiedName  COMMENT_PROP_KEY = new QualifiedName("Comment", "Comment");          
           public propertyPage() {
                     super();
           }
@@ -31,7 +34,16 @@ package fr.jussieu.pps.keditor.ui;
                        textField = new Text(myComposite, SWT.BORDER);
                        textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                        textField.setText(getAuthor());
-                      return myComposite;
+                       
+                       Label comlabel = new Label(myComposite, SWT.NONE);
+                       comlabel.setLayoutData(new GridData());
+                       comlabel.setText("Comments");
+                       textField2 = new Text(myComposite, SWT.WRAP);
+                     //  textField2.setSize(20, 50);
+                       textField2.setLayoutData(new GridData(500,400));
+                       textField2.setText(getComment());
+                      
+                       return myComposite;
           }
           protected String getAuthor() {
                        IResource resource =
@@ -48,6 +60,23 @@ package fr.jussieu.pps.keditor.ui;
                            return e.getMessage();
                         }
                     }
+          
+          protected String getComment() {
+              IResource resource =
+                 ((TreeObject) getElement()).getResouce();
+              try {
+                 String value =
+                    resource.getPersistentProperty(
+                       COMMENT_PROP_KEY);
+                 if (value == null)
+                    return "";
+                 return value;
+               }
+               catch (CoreException e) {
+                  return e.getMessage();
+               }
+           }
+          
           protected void setAuthor(String author) {
                        IResource resource =
                                    ((TreeObject) getElement()).getResouce();
@@ -62,8 +91,24 @@ package fr.jussieu.pps.keditor.ui;
                        catch (CoreException e) {
                        }
                     }
+          protected void setComment(String author) {
+              IResource resource =
+                          ((TreeObject) getElement()).getResouce();
+              String value = author;
+              if (value.equals(""))
+                 value = null;
+              try {
+                          resource.setPersistentProperty(
+                                COMMENT_PROP_KEY,
+                    value);
+              }
+              catch (CoreException e) {
+              }
+           }
+          
           public boolean performOk() {
                        setAuthor(textField.getText());
+                       setComment(textField2.getText());
                        return super.performOk();
                     }
 }

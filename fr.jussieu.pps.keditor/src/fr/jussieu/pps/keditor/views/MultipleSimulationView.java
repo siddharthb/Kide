@@ -1,5 +1,10 @@
 package fr.jussieu.pps.keditor.views;
-   import java.util.ArrayList;
+   import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Iterator;
 
    import org.eclipse.core.resources.IFile;
@@ -14,10 +19,14 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
    import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
    import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
  import org.eclipse.jface.action.Action;
   import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
   import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -36,6 +45,7 @@ import org.eclipse.jface.wizard.WizardDialog;
   import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
   import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MessageBox;
  import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
   import org.eclipse.ui.IWorkbenchPage;
@@ -51,13 +61,22 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 import fr.jussieu.pps.keditor.ui.KappaUiPlugin;
 import fr.jussieu.pps.keditor.ui.propertyPage;
 import fr.jussieu.pps.keditor.wizards.SimulateWizard;
+import fr.jussieu.pps.keditor.exec.fileName;
+import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
+
  public class MultipleSimulationView extends ViewPart implements IResourceChangeListener {
            private TreeViewer viewer;
          private TreeParent invisibleRoot;
          private static final String AUTHOR_ID = "RMP.author";
+         private static final String COMMENT_ID = "RMP.comment";
+         
          private static final TextPropertyDescriptor AUTHOR_PROP_DESC = new
          					TextPropertyDescriptor(AUTHOR_ID,"author");
-         private static final IPropertyDescriptor[] DESCRIPTORS =  { AUTHOR_PROP_DESC };
+
+         private static final TextPropertyDescriptor COMMENT_PROP_DESC = new
+			TextPropertyDescriptor(COMMENT_ID,"comment");
+
+         private static final IPropertyDescriptor[] DESCRIPTORS =  { AUTHOR_PROP_DESC,COMMENT_PROP_DESC };
     public class TreeObject implements IAdaptable, IPropertySource {
           private String name;
           private TreeParent parent;
@@ -98,6 +117,9 @@ import fr.jussieu.pps.keditor.wizards.SimulateWizard;
         try{
           if(AUTHOR_ID.equals(id)){
              return resouce.getPersistentProperty(propertyPage.AUTHOR_PROP_KEY);
+          }else if(COMMENT_ID.equals(id)){
+                 return resouce.getPersistentProperty(propertyPage.COMMENT_PROP_KEY);
+              
           }
         }catch(Exception e){
 
@@ -117,6 +139,9 @@ import fr.jussieu.pps.keditor.wizards.SimulateWizard;
      try{
        if(AUTHOR_ID.equals(id)){
          resouce.setPersistentProperty(propertyPage.AUTHOR_PROP_KEY,(String)value);
+       }else if(COMMENT_ID.equals(id)){
+             resouce.setPersistentProperty(propertyPage.COMMENT_PROP_KEY,(String)value);
+           
        }
      }catch(Exception e){
 
@@ -184,7 +209,8 @@ import fr.jussieu.pps.keditor.wizards.SimulateWizard;
                     Image image;
                     String url="";
                 	  if (obj instanceof TreeParent)
-                       {   url = "/icons/Open16.gif";
+                       {   String imageKey = ISharedImages.IMG_OBJ_FOLDER;
+                       return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
                        }else url = "/images/kappaeditor.png";
                 	  ImageDescriptor descriptor = ImageDescriptor.createFromURL(KappaUiPlugin.getDefault().getBundle().getEntry(url));
            			 image = descriptor.createImage();
@@ -316,10 +342,8 @@ import fr.jussieu.pps.keditor.wizards.SimulateWizard;
                  menuMgr.add(new Separator());
                  Action simulate =new Action() {
                      public void run() {
-                          System.out.println("Hello World");
                           String s="";
                           ISelection selection=viewer.getSelection();
-                         // System.out.println(((IStructuredSelection) selection).size());
                           for(Iterator<Object> i=((IStructuredSelection) selection).iterator();i.hasNext();)
                           {
                         	  Object obj=i.next();
@@ -330,25 +354,204 @@ import fr.jussieu.pps.keditor.wizards.SimulateWizard;
                                String path1=Platform.getLocation().toString();
                                path1=path1+tempObj.getResouce().getFullPath();
                        			path1=path1.replaceAll(" ","\\ ");
-                               //System.out.println(path1);
                        			s=s+"-i "+path1+" ";
-                       		//	System.out.println(s);
                            }
+                          }
                          IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
                       	SimulateWizard wizard = new SimulateWizard(window.getWorkbench(),s.trim());
                         WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
                         dialog.create();
                         dialog.open();
 
-                          }
                      }
                  };
            simulate.setText("Simulate");
           menuMgr.add(simulate);
-                 menuMgr.add(new PropertyDialogAction(getSite(), viewer));
+          
+          Action bin =new Action() {
+              public void run() {
+                   String s="";
+                   String bin="",finalp="";
+                   ISelection selection=viewer.getSelection();
+                   for(Iterator<Object> i=((IStructuredSelection) selection).iterator();i.hasNext();)
+                   {
+                 	  Object obj=i.next();
+                   if (!(obj instanceof TreeObject)) {
+                          return;
+                    }else {
+                         TreeObject tempObj = (TreeObject) obj;
+                        String path1=Platform.getLocation().toString();
+                        path1=path1+tempObj.getResouce().getFullPath();
+                		bin= bin + tempObj.getResouce().getFullPath()+"\n";
+                		finalp= ""+tempObj.getResouce().getFullPath();
+                		path1=path1.replaceAll(" ","\\ ");
+                			s=s+"-i "+path1+" ";
+                    }
+                   }
+                  IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
+                  Runtime runtime = Runtime.getRuntime();
+                  Process process=null;
+                  String s1=(KappaUiPlugin.getDefault().getBundle().getLocation());
+                  File f=new File("");
+                  try {
+					
+					InputDialog dialog=new InputDialog(window.getShell(),"File Name","Enter the name of the bin file","default",new valid());
+					dialog.create();
+					dialog.open();
+					String v=dialog.getValue();
+					dialog.close();
+					String path1=(s.substring(s.trim().lastIndexOf(' '),s.lastIndexOf('/')+1));
+				
+					IPreferenceStore store = KappaUiPlugin.getDefault().getPreferenceStore();
+					String binary=store.getString("pathPreference");
+					binary=(binary.substring(0,binary.lastIndexOf('/')+1)+"./"+binary.substring(binary.lastIndexOf('/')+1));
+
+					
+					if(v!=null)
+					{
+						process = runtime.exec(binary+" " + s + " -make-sim "+v+".bin -d "+ path1.trim() +" -e 0",null,null);
+						//	process = runtime.exec(s1.substring(s1.lastIndexOf(':')+1)+"lib/./KaSim " + s + " -make-sim "+v+".bin -d "+ path1.trim() +" -e 0",null,null);
+					process.waitFor();
+					finalp=finalp.substring(0,finalp.lastIndexOf('/')+1)+v+".bin";
+					}
+					/*
+					InputStream stderr = process.getErrorStream();
+					InputStream stdout = process.getInputStream();
+
+					StreamGobbler errorGobbler = null;
+
+					StreamGobbler outputGobbler = null;
+
+					// start the two threads that will get the outputs from stderr and stdout
+					errorGobbler = new StreamGobbler(stderr,window);
+					outputGobbler = new StreamGobbler(stdout,window);
+					errorGobbler.start();
+					outputGobbler.start();
+
+			        String s2=outputGobbler.waitAndGetResult();
+					System.out.println(s2);
+					s2=errorGobbler.waitAndGetResult();
+					System.out.println(s2);
+	*/
+					
+		/*			SimulateWizard wizard = new SimulateWizard(window.getWorkbench(),file.getName(),file.getFullPath().toString());
+				    WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
+				    dialog.create();
+				    dialog.open();
+			*/		
+					
+					
+					if(v!=null)
+					{
+					MessageBox messageBox1 = new MessageBox(window.getShell(), SWT.ICON_INFORMATION); 
+			        messageBox1.setText("Success");
+			        messageBox1.setMessage(v+".bin has been successfully created.");
+			        messageBox1.open();
+			
+			    //    System.out.println(finalp.substring(0,finalp.lastIndexOf('/')+1));
+			     //   if(finalp.substring(1,finalp.lastIndexOf('/')).indexOf('/')==-1)
+			      //  	ResourcesPlugin.getWorkspace().getRoot().
+			      //  else
+			        ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, null);
+			        IFile ifile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(finalp));
+			        
+			        IResource ir=ifile;
+			//        System.out.println(ir.exists());
+            String value = bin.trim();
+            if (value.equals(""))
+               value = null;
+            try 
+            {
+                        ir.setPersistentProperty(new QualifiedName("Author", "Author"),value);
+            }
+            catch (CoreException e) 
+            {
+            	System.out.println("Property couldn't be set");
+            }
+            
+					}
+						
+						} catch (Exception e) {
+							MessageBox messageBox1 = new MessageBox(window.getShell(), SWT.ERROR); 
+					        messageBox1.setText("Error");
+					        messageBox1.setMessage("Error in making bin. Maybe KaSim's bin path is not correctly set");
+					        messageBox1.open();
+					 
+					System.out.println("Error in Making bin");
+					e.printStackTrace();
+				}
+    			
+                   }
+              
+          };
+    bin.setText("Make bin...");
+   menuMgr.add(bin);
+             menuMgr.add(new PropertyDialogAction(getSite(), viewer));
          }
    
          public void setFocus() {
                  viewer.getControl().setFocus();
          }
+ }
+ 
+ class valid implements IInputValidator
+ {
+
+	@Override
+	public String isValid(String newText) {
+		if(newText==null)
+			return "The name cannot be empty";
+		else if(newText.equals(""))
+			return "The name cannot be empty";
+		else if(newText.indexOf(' ')!=-1)
+			return "The name cannot contain spaces";
+		return null;
+	}
+	 
+ }
+ 
+ 
+ /**
+  * Utility class, used by CommandRunner to absorb the output of a process quickly, so as to avoid
+  * saturating the system buffers (which makes the whole application hang...).
+  */
+ class StreamGobbler extends Thread {
+
+ 	private InputStream inputStream = null;
+ 	private StringBuffer result = new StringBuffer();
+ 	private IWorkbenchWindow window;
+
+ 	StreamGobbler(InputStream inputStream,IWorkbenchWindow window) {
+ 		this.inputStream = inputStream;
+ 		this.window=window;
+ 	}
+
+ 	@Override
+ 	public void run() {
+ 		this.fillReturnBuffer();
+ 	}
+
+ 	protected synchronized void fillReturnBuffer() {
+ 		try {
+ 			InputStreamReader inputStreamReader = new InputStreamReader(this.inputStream);
+ 			BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+ 			String line = null;
+ 				while ((line = bufferedReader.readLine()) != null) {
+ 					
+ 					this.result.append(line + "\n");
+ 			}
+ 		} catch (Throwable e) {
+ 		//	ocaml.OcamlPlugin.logError("error in StreamGobbler:fillReturnBuffer", e);
+ 		}
+ 	}
+
+ 	public synchronized String waitAndGetResult() {
+ 		try {
+ 			this.join();
+ 		} catch (InterruptedException e) {
+ 		//	ocaml.OcamlPlugin.logError("StreamGobbler:waitAndGetResult interrupted", e);
+ 		}
+ 		
+ 		return this.result.toString();
+ 	}
  }

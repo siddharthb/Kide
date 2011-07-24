@@ -49,6 +49,7 @@ public class parseCheck
 		}
 		catch(Exception e)
 		{
+			System.out.println(e.getMessage());
 			System.out.println("Parsing not possible");
 		}
 		/*	while(i!=10)

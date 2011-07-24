@@ -8,12 +8,12 @@ public class SimulateModel
 {
 
 	// holiday destination
-	protected String events;
+	protected String events="";
 	
 	// holiday departure point
-	protected String time;
+	protected String time="";
 	
-	protected String commandLine;
+	protected String commandLine="";
 	// flag indicating whether the user buys insurance when traveling by car
 	protected boolean buyInsurance;
 

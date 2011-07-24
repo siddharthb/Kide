@@ -57,8 +57,10 @@ public class SimulateWizard extends Wizard {
 					"File info","Multiple Files Spawned");
 				spawn.main(path,workbench.getActiveWorkbenchWindow(),model.commandLine);
 		}
+
+		System.out.println("I reached here");
 		return true;
-	
+		
 		}
 	
 	public void addPages()

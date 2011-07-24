@@ -38,7 +38,8 @@ public void run(IAction action) {
 //temporarily removed
  //   annotation.main(window);
 //	parseCheck.main(window);
-//	dummy.main();
+//	progressBar.main();
+	
 	
 	if (!(window.getActivePage().getActiveEditor().getEditorInput() instanceof IFileEditorInput)) return;
 	IFile file = ((IFileEditorInput) window.getActivePage().getActiveEditor().getEditorInput()).getFile();
@@ -49,6 +50,7 @@ public void run(IAction action) {
     WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
     dialog.create();
     dialog.open();
+    dialog.close();
 
 }
 

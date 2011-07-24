@@ -127,7 +127,11 @@ public class KappaUiPlugin extends AbstractUIPlugin {
 	/** @return true if the system is compatible with linux (that is: Linux or Mac Os X) */
 	public static boolean runningOnLinuxCompatibleSystem() {
 		String os = Platform.getOS();
-		return !(os.equals(Platform.OS_WIN32));
+		return (os.equals(Platform.OS_LINUX));
+	}
+	public static boolean runningOnMacCompatibleSystem() {
+		String os = Platform.getOS();
+		return (os.equals(Platform.OS_MACOSX));
 	}
 
 }
