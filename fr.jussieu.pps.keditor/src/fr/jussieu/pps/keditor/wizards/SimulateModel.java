@@ -13,9 +13,11 @@ public class SimulateModel
 	// holiday departure point
 	protected String time="";
 	
+	protected String outfile="";
+	
 	protected String commandLine="";
 	// flag indicating whether the user buys insurance when traveling by car
-	protected boolean buyInsurance;
+	protected boolean buyInsurance=true;
 
 
 	public String toString()

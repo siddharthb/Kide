@@ -7,7 +7,7 @@
             class="fr.jussieu.pps.keditor.ui.editor.KappaEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
-            extensions="ka"
+            extensions="ka,ks"
             icon="images/kappaeditor.png"
             id="fr.jussieu.pps.keditor"
             name="Kappa Editor">
@@ -17,7 +17,7 @@
          point="org.eclipse.core.filebuffers.documentSetup">
       <participant
             class="fr.jussieu.pps.keditor.ui.editor.KappaDocumentSetupParticipant"
-            extensions="ka">
+            extensions="ka,ks">
       </participant>
    </extension>
    <extension
@@ -45,7 +45,6 @@
                icon="images/refresh.png"
                id="fr.jussieu.pps.keditor.CompileButton"
                label="Simulate"
-               menubarPath="fr.jussieu.pps.keditor.workbenchMenu/content"
                style="push"
                toolbarPath="Normal/additions"
                tooltip="Compile !">
@@ -66,7 +65,6 @@
                icon="images/influencemap.png"
                id="fr.jussieu.pps.keditor.IMapButton"
                label="Influence Map"
-               menubarPath="fr.jussieu.pps.keditor.menu1/content"
                style="push"
                toolbarPath="Normal/additions"
                tooltip="Get the Influence Map">
@@ -119,6 +117,7 @@
             name="Influence Map View">
       </view>
       <view
+            category="fr.jussieu.pps.keditor"
             class="fr.jussieu.pps.keditor.views.MultipleSimulationView"
             icon="images/story.png"
             id="fr.jussieu.pps.keditor.kappaview"
@@ -126,6 +125,7 @@
             restorable="true">
       </view>
       <view
+            category="fr.jussieu.pps.keditor"
             class="fr.jussieu.pps.keditor.views.KappaBinariesView"
             icon="images/compression.png"
             id="fr.jussieu.pps.keditor.binaryview"

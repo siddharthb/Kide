@@ -170,7 +170,7 @@ public class KappaContentAssistProcessor implements IContentAssistProcessor {
 
 	@Override
 	public char[] getCompletionProposalAutoActivationCharacters() {
-		   return new char[] { '%' };
+		   return new char[] { '%','[','$' };
 		}
 
 	@Override

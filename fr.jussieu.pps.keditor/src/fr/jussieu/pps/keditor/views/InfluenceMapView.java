@@ -26,7 +26,7 @@ import fr.jussieu.pps.keditor.ui.KappaUiPlugin;
  */
 
 public class InfluenceMapView extends ViewPart {
-	public SWTImageCanvas imageCanvas;
+	public static SWTImageCanvas imageCanvas;
 	
 	/**
 	 * The constructor.
@@ -52,10 +52,11 @@ public class InfluenceMapView extends ViewPart {
 			binary=(binary.substring(0,binary.lastIndexOf('/')+1)+"./"+binary.substring(binary.lastIndexOf('/')+1));
 
 			try {
+			//	System.out.println(pathnew);
 				// execute the command
 				process = runtime.exec("rm -rf "+pathnew+"map.gif",null,null);
 				process.waitFor();
-				process = runtime.exec("rm -rf map.dot",null,null);
+				process = runtime.exec("rm -rf "+pathnew+"map.dot",null,null);
 				process.waitFor();
 				
 				
@@ -63,7 +64,7 @@ public class InfluenceMapView extends ViewPart {
 				String s=(KappaUiPlugin.getDefault().getBundle().getLocation());
 	//			System.out.println(path2);
 //				process = runtime.exec(s.substring(s.lastIndexOf(':')+1)+"lib/./KaSim -i " + path2 + " -im map.dot -e 0",null,new File(f1.getAbsolutePath()));
-				process = runtime.exec(binary+" -i " + path2 + " -im map.dot -e 0",null,new File(f1.getAbsolutePath()));
+				process = runtime.exec(binary+" -i " + path2 + " -im map.dot -e 0 -d "+pathnew,null,new File(f1.getAbsolutePath()));
 
 				// get the standard and error outputs
 	
@@ -71,9 +72,9 @@ public class InfluenceMapView extends ViewPart {
 				
 				// wait for the process to end
 				process.waitFor();
-			      process = runtime.exec("dot -T gif map.dot -o "+pathnew+"map.gif",null,null);
+			      process = runtime.exec("dot -T gif "+pathnew+"map.dot -o "+pathnew+"map.gif",null,null);
 			      process.waitFor();				    
-			      System.out.println("Ran successfully");
+			  //    System.out.println("Ran successfully");
 			} catch (Exception e) {
 			System.out.println("Error in Running");
 			}
@@ -82,6 +83,7 @@ public class InfluenceMapView extends ViewPart {
 		imageCanvas.onFileOpen(pathnew);		
 	}
 
+	
 	/**
 	 * Called when we must grab focus.
 	 * @see org.eclipse.ui.part.ViewPart#setFocus

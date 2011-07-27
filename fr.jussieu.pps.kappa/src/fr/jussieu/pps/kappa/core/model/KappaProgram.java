@@ -111,7 +111,7 @@ public class KappaProgram {
 			}
 			parseTree = (ASTRoot) parser.ast;
 			edgeCheck.main(document,parseTree);
-			
+			duplicateCheck.main(document, parseTree);
 		} catch (Exception e) {
 			parseTree = new ASTRoot();
 		}

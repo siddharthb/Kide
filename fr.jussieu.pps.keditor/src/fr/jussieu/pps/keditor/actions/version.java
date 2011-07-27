@@ -50,8 +50,7 @@ public void init(IWorkbenchWindow window) {
 public void run(IAction action) {
 	// Instantiates and initializes the wizard
 //temporarily removed
-	
-//System.out.println(KappaUiPlugin.getDefault().getBundle().getLocation());
+
 	
 	IPreferenceStore store = KappaUiPlugin.getDefault().getPreferenceStore();
 	String binary=store.getString("pathPreference");

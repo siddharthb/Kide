@@ -1,6 +1,7 @@
 package fr.jussieu.pps.keditor.wizards;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -41,7 +42,7 @@ public class KappaNewWizardPage extends WizardPage {
 	public KappaNewWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("Kappa File");
-		setDescription("This wizard creates a new file with *.ka extension that can be opened by the plugin's Kappa editor.");
+		setDescription("This wizard creates a new file with *.ka or *.ks extension that can be opened by the plugin's Kappa editor.");
 		this.selection = selection;
 	}
 
@@ -162,16 +163,25 @@ public class KappaNewWizardPage extends WizardPage {
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("ka") == false) {
-				updateStatus("File extension must be \"ka\"");
+			if (ext.equalsIgnoreCase("ka") == false && ext.equalsIgnoreCase("ks") == false) {
+				updateStatus("File extension must be \"ka\" or \"ks\"");
 				return;
 			}
 		}
+
 		if(dotLoc == -1)
 		{
 			updateStatus("File must have a extension");
 			return;
 		}
+		IContainer container1 = (IContainer) container;
+		IFile file = container1.getFile(new Path(fileName));
+		if(file.exists())
+		{
+			updateStatus("File with the name already exists!");
+			return;
+		}
+	
 		updateStatus(null);
 	}
 

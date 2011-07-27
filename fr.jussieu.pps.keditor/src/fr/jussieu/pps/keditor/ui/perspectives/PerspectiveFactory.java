@@ -9,7 +9,7 @@ public class PerspectiveFactory implements IPerspectiveFactory {
 		 private static final String VIEW_ID =
 		        "fr.jussieu.pps.keditor.kappaview";
 		 private static final String VIEW_ID1 =
-		        "fr.jussieu.pps.keditor.views.InfluenceMapView";
+		        "fr.jussieu.pps.keditor.binaryview";
 
 
 		  private static final String BOTTOM = "bottom";

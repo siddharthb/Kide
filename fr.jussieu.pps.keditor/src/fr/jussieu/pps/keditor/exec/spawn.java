@@ -13,6 +13,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -27,7 +30,7 @@ import fr.jussieu.pps.keditor.ui.KappaUiPlugin;
 
 public class spawn
 {
-  public static void main(String path,IWorkbenchWindow window,String cmd)
+  public static void main(String path,IWorkbenchWindow window,String cmd,String dest)
   {
 	
 //	  progressBar.main(path, window, cmd);
@@ -49,7 +52,7 @@ public class spawn
  Runtime runtime = Runtime.getRuntime();
 		try {
 			// execute the command
-			process = runtime.exec("rm -rf abc.out",null,null);
+			process = runtime.exec("rm -rf "+dest,null,null);
 			exitValue = process.waitFor();
 
 					File f = new File("");
@@ -57,7 +60,7 @@ public class spawn
 					String s=(KappaUiPlugin.getDefault().getBundle().getLocation());
 
 				if(KappaUiPlugin.runningOnLinuxCompatibleSystem())	
-					process = runtime.exec(binary+" --eclipse " + path + " " + cmd,null,new File(f.getAbsolutePath()));
+					process = runtime.exec(binary+" --eclipse " + path + " -d "+ dest.substring(0,dest.lastIndexOf('/')+1)+" " + cmd,null,new File(f.getAbsolutePath()));
 			//		process = runtime.exec(s.substring(s.lastIndexOf(':')+1)+"lib/./KaSim --eclipse " + path + " " + cmd,null,new File(f.getAbsolutePath()));
 				else if(KappaUiPlugin.runningOnMacCompatibleSystem())
 					process = runtime.exec(binary+" --eclipse " + path + " " + cmd,null,new File(f.getAbsolutePath()));
@@ -91,9 +94,10 @@ public class spawn
 		    } 
 			// wait for the process to end
 		    exitValue = process.waitFor();
-				
+		    ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, null);
+	        		
 	//		System.out.println("Ran till here");
-			s=(KappaUiPlugin.getDefault().getBundle().getLocation());
+	//		s=(KappaUiPlugin.getDefault().getBundle().getLocation());
 	//	    process = runtime.exec("java -jar "+s.substring(s.lastIndexOf(':')+1,(s.substring(0,s.length()-1)).lastIndexOf('/'))+"/PhiBPlot.jar abc.out",null,null);
 		   //   exitValue = process.waitFor();
 			    
@@ -118,7 +122,9 @@ public class spawn
 			   else
 				   MessageDialog.openInformation(shell, "Deadlock", e.getMessage());
 				 	   
-			   }
+			   } catch (CoreException e) {
+			System.out.println("Error in refreshing");
+		}
  
   }
   

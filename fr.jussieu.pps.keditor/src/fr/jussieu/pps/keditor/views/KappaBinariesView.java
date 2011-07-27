@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.eclipse.core.resources.IContainer;
    import org.eclipse.core.resources.IFile;
    import org.eclipse.core.resources.IFolder;
   import org.eclipse.core.resources.IProject;
@@ -16,6 +17,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
    import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
    import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
  import org.eclipse.jface.action.Action;
   import org.eclipse.jface.action.MenuManager;
@@ -54,6 +56,8 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 import fr.jussieu.pps.keditor.ui.KappaUiPlugin;
 import fr.jussieu.pps.keditor.ui.binPropertyPage;
+import fr.jussieu.pps.keditor.views.MultipleSimulationView.TreeObject;
+import fr.jussieu.pps.keditor.views.MultipleSimulationView.TreeParent;
 import fr.jussieu.pps.keditor.wizards.SimulateWizard;
 import fr.jussieu.pps.keditor.exec.fileName;
 
@@ -184,7 +188,10 @@ import fr.jussieu.pps.keditor.exec.fileName;
          }
          class ViewLabelProvider extends LabelProvider {
                  public String getText(Object obj) {
-                            return obj.toString();
+                	 TreeObject1 tempObj = (TreeObject1) obj;
+                	 if(tempObj.getResouce()!=null)
+                            return obj.toString()+ "  ["+tempObj.getResouce().getFullPath().toString().substring(0,tempObj.getResouce().getFullPath().toString().lastIndexOf('/')+1)+"]";
+                	 else return obj.toString();
                   }
                   public Image getImage(Object obj) {
                     Image image;
@@ -241,6 +248,46 @@ import fr.jussieu.pps.keditor.exec.fileName;
                   invisibleRoot = new TreeParent("");
                   invisibleRoot.addChild(root);
          }
+        
+        public void folderRec(TreeParent root,IResource[] folderResources)
+        {
+        	try{
+        	for (int j = 0; j < folderResources.length; j++) {
+         	   if (folderResources[j] instanceof IFile &&           
+                        (folderResources[j].getName().endsWith(".bin"))){
+                         TreeObject1 obj = new TreeObject1(folderResources[j]
+		.getName());
+                          obj.setResouce(folderResources[j]);
+                          root.addChild(obj);
+                       }
+                if (folderResources[j] instanceof IFolder) {
+         IFolder resource = (IFolder) folderResources[j];
+                   if (true){
+                     IResource[] fileResources = resource.members();
+                      for (int k = 0; k < fileResources.length; k++) {
+                        if (fileResources[k] instanceof IFile &&           
+                           (fileResources[k].getName().endsWith(".bin"))){
+                            TreeObject1 obj = new TreeObject1(fileResources[k]
+		.getName());
+                             obj.setResouce(fileResources[k]);
+                             root.addChild(obj);
+                          }
+                        if(fileResources[k] instanceof IFolder)
+                        {
+                        	IFolder resource1 = (IFolder) fileResources[k];
+                        	IResource[] fileResources1 = resource1.members();
+                            folderRec(root,fileResources1);
+                        }
+                       }
+                	 }
+                }
+          }
+        	}
+        	catch(Exception e){
+        		System.out.println("Error in folder Recursion");
+        	}
+        }
+
 
          public KappaBinariesView() {
         }
@@ -324,7 +371,7 @@ import fr.jussieu.pps.keditor.exec.fileName;
                  Action simulate =new Action() {
                      public void run() {
                      //     System.out.println("Hello World");
-                          String s="";
+                          String s="",finalp="";
                           ISelection selection=viewer.getSelection();
                           Object obj = ((IStructuredSelection)selection).getFirstElement();
                           if (!(obj instanceof TreeObject1)) {
@@ -336,11 +383,13 @@ import fr.jussieu.pps.keditor.exec.fileName;
                     			path1=path1.replaceAll(" ","\\ ");
                             //System.out.println(path1);
                     			s=s+"-load-sim "+path1+" ";
+                    			finalp= ""+tempObj.getResouce().getFullPath();
+                        		
                     		//	System.out.println(s);
                         }
                           IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
                           
-                        SimulateWizard wizard = new SimulateWizard(window.getWorkbench(),s);
+                        SimulateWizard wizard = new SimulateWizard(window.getWorkbench(),s,(IContainer)ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(finalp.substring(0, finalp.lastIndexOf('/')+1))));
       				    WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
       				    dialog.create();
       				    dialog.open();

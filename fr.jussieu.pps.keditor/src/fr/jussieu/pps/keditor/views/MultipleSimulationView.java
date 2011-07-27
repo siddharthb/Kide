@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.eclipse.core.resources.IContainer;
    import org.eclipse.core.resources.IFile;
    import org.eclipse.core.resources.IFolder;
   import org.eclipse.core.resources.IProject;
@@ -67,6 +68,7 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
  public class MultipleSimulationView extends ViewPart implements IResourceChangeListener {
            private TreeViewer viewer;
          private TreeParent invisibleRoot;
+         public static IContainer cnt;
          private static final String AUTHOR_ID = "RMP.author";
          private static final String COMMENT_ID = "RMP.comment";
          
@@ -203,7 +205,10 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
          }
          class ViewLabelProvider extends LabelProvider {
                  public String getText(Object obj) {
-                            return obj.toString();
+                	 TreeObject tempObj = (TreeObject) obj;
+                	 if(tempObj.getResouce()!=null)
+                            return obj.toString()+ "  ["+tempObj.getResouce().getFullPath().toString().substring(0,tempObj.getResouce().getFullPath().toString().lastIndexOf('/')+1)+"]";
+                	 else return obj.toString();
                   }
                   public Image getImage(Object obj) {
                     Image image;
@@ -229,30 +234,7 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
                       IProject[] projects = workspace.getRoot().getProjects();
                       for (int i = 0; i < projects.length; i++) {
                            IResource[] folderResources = projects[i].members();
-                           for (int j = 0; j < folderResources.length; j++) {
-                        	   if (folderResources[j] instanceof IFile &&           
-                                       folderResources[j].getName().endsWith(".ka")){
-                                        TreeObject obj = new TreeObject(folderResources[j]
-					.getName());
-                                         obj.setResouce(folderResources[j]);
-                                         root.addChild(obj);
-                                      }
-                               if (folderResources[j] instanceof IFolder) {
-                        IFolder resource = (IFolder) folderResources[j];
-                                  if (true){//resource.getName().equalsIgnoreCase("PropertyFiles")) {
-                                    IResource[] fileResources = resource.members();
-                                     for (int k = 0; k < fileResources.length; k++) {
-                                       if (fileResources[k] instanceof IFile &&           
-                                          fileResources[k].getName().endsWith(".ka")){
-                                           TreeObject obj = new TreeObject(fileResources[k]
-					.getName());
-                                            obj.setResouce(fileResources[k]);
-                                            root.addChild(obj);
-                                         }
-                                      }
-                               	 }
-                               }
-                         }
+                           folderRec(root,folderResources);
                        }
                   }catch (Exception e) {
                      // log exception
@@ -260,6 +242,45 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
                   invisibleRoot = new TreeParent("");
                   invisibleRoot.addChild(root);
          }
+        
+        public void folderRec(TreeParent root,IResource[] folderResources)
+        {
+        	try{
+        	for (int j = 0; j < folderResources.length; j++) {
+         	   if (folderResources[j] instanceof IFile &&           
+                        (folderResources[j].getName().endsWith(".ka")||folderResources[j].getName().endsWith(".ks"))){
+                         TreeObject obj = new TreeObject(folderResources[j]
+		.getName());
+                          obj.setResouce(folderResources[j]);
+                          root.addChild(obj);
+                       }
+                if (folderResources[j] instanceof IFolder) {
+         IFolder resource = (IFolder) folderResources[j];
+                   if (true){
+                     IResource[] fileResources = resource.members();
+                      for (int k = 0; k < fileResources.length; k++) {
+                        if (fileResources[k] instanceof IFile &&           
+                           (fileResources[k].getName().endsWith(".ka")||folderResources[j].getName().endsWith(".ks"))){
+                            TreeObject obj = new TreeObject(fileResources[k]
+		.getName());
+                             obj.setResouce(fileResources[k]);
+                             root.addChild(obj);
+                          }
+                        if(fileResources[k] instanceof IFolder)
+                        {
+                        	IFolder resource1 = (IFolder) fileResources[k];
+                        	IResource[] fileResources1 = resource1.members();
+                            folderRec(root,fileResources1);
+                        }
+                       }
+                	 }
+                }
+          }
+        	}
+        	catch(Exception e){
+        		System.out.println("Error in folder Recursion");
+        	}
+        }
 
          public MultipleSimulationView() {
         }
@@ -283,7 +304,7 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
         	            if(event.getType() == IResourceChangeEvent.POST_CHANGE){
         	                event.getDelta().accept(new IResourceDeltaVisitor(){
         	                       public boolean visit(IResourceDelta delta) throws CoreException {
-        	                            if(delta.getResource().getName().endsWith(".ka")){
+        	                            if(delta.getResource().getName().endsWith(".ka")||delta.getResource().getName().endsWith(".ks")){
         	                                     initialize();
         	                                    Display.getDefault().asyncExec(new Runnable() {
         	                                                    public void run() {
@@ -342,7 +363,7 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
                  menuMgr.add(new Separator());
                  Action simulate =new Action() {
                      public void run() {
-                          String s="";
+                          String s="",finalp="";
                           ISelection selection=viewer.getSelection();
                           for(Iterator<Object> i=((IStructuredSelection) selection).iterator();i.hasNext();)
                           {
@@ -355,10 +376,12 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
                                path1=path1+tempObj.getResouce().getFullPath();
                        			path1=path1.replaceAll(" ","\\ ");
                        			s=s+"-i "+path1+" ";
+                       			finalp= ""+tempObj.getResouce().getFullPath();
+                        		
                            }
                           }
                          IWorkbenchWindow window = getViewSite().getWorkbenchWindow();
-                      	SimulateWizard wizard = new SimulateWizard(window.getWorkbench(),s.trim());
+                      	SimulateWizard wizard = new SimulateWizard(window.getWorkbench(),s.trim(),(IContainer)ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(finalp.substring(0, finalp.lastIndexOf('/')+1))));
                         WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
                         dialog.create();
                         dialog.open();
@@ -393,14 +416,20 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
                   Process process=null;
                   String s1=(KappaUiPlugin.getDefault().getBundle().getLocation());
                   File f=new File("");
+              	String path1=(s.substring(s.trim().lastIndexOf(' '),s.lastIndexOf('/')+1));
+			//	System.out.println(finalp);
                   try {
-					
+               	  IResource container = ResourcesPlugin.getWorkspace().getRoot()
+      				.findMember(new Path(finalp.substring(0, finalp.lastIndexOf('/')+1)));
+             //  	  System.out.println(container.exists());
+             //  	System.out.println(container.getFullPath().toString());
+          		
+               	  cnt=(IContainer) container;
 					InputDialog dialog=new InputDialog(window.getShell(),"File Name","Enter the name of the bin file","default",new valid());
 					dialog.create();
 					dialog.open();
 					String v=dialog.getValue();
 					dialog.close();
-					String path1=(s.substring(s.trim().lastIndexOf(' '),s.lastIndexOf('/')+1));
 				
 					IPreferenceStore store = KappaUiPlugin.getDefault().getPreferenceStore();
 					String binary=store.getString("pathPreference");
@@ -505,6 +534,12 @@ import fr.jussieu.pps.keditor.views.KappaBinariesView.TreeObject1;
 			return "The name cannot be empty";
 		else if(newText.indexOf(' ')!=-1)
 			return "The name cannot contain spaces";
+		else if(newText.contains(".bin".subSequence(0, 4)))
+			return ".bin will automatically be appended";
+		IFile file = MultipleSimulationView.cnt.getFile(new Path(newText+".bin"));
+		if (file.exists())
+			return "Bin file with the name already exists";
+		
 		return null;
 	}
 	 
